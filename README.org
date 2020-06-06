@@ -1,0 +1,4 @@
+* requeriments
+sdl 
+
+sudo apt install libsld2-dev
