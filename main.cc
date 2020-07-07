@@ -32,6 +32,23 @@ const int FREQUENCY = 44100;
 double freq = 0;
 
 
+double min(double a, double b) {
+    // printf("%f %f",a,b);
+    return (a>b)?b:a;
+}
+
+double max(double a, double b) {
+    // printf("%f %f",a,b);
+    return (a<b)?b:a;
+}
+
+double lerp(double a, double b, double i){
+    double newi= max(0,min(1,i));
+    // TODO verificar
+    // printf("%f %f %f",i,newi,-a*(newi-1)+b*newi);
+    return -a*(newi-1) + b*newi;
+}
+
 class ADSR_Envelope {
     public:
         ADSR_Envelope(double startAmp = 1, double attackTime = 0.5, double decayTime = 0.8, double sustainAmp = 0.8, double releaseTime = 1.3);
@@ -42,6 +59,21 @@ class ADSR_Envelope {
             m_TimeOn = time_on;
             // std::cout<< " set time on";
         };
+
+        void setA(double newA) {
+            m_AttackTime = lerp(minAttackTime, maxAttackTime, newA);
+        };
+
+        void setD(double newD) {
+            m_DecayTime = lerp(minDecayTime,maxDecayTime,newD);
+        };
+        void setS(double newS) {
+            m_SustainAmp = lerp(minSustainAmp,maxSustainAmp,newS);
+        };
+        void setR(double newR) {
+            m_ReleaseTime = lerp(minReleaseTime,maxReleaseTime,newR);
+        };
+
         void note_off(Uint32 time_off) {
             play_note=false;
             m_TimeOff = time_off;
@@ -56,6 +88,18 @@ class ADSR_Envelope {
         double m_ReleaseTime;
         Uint32 m_TimeOn=0;
         Uint32 m_TimeOff=0;
+
+
+        double minAttackTime=0;
+        double minDecayTime=0.2;
+        double minSustainAmp=0.2;
+        double minReleaseTime=0.2;
+
+        double maxAttackTime=4;
+        double maxDecayTime=2;
+        double maxSustainAmp=1;
+        double maxReleaseTime=2;
+
 };
 
 double ADSR_Envelope::getAmp(double _time){
