@@ -1,10 +1,26 @@
+
 #include <iostream>
+#include <fcntl.h>
 #include <cmath>
 #include <time.h>
+#include <unistd.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_main.h>
 #include "mixer.hpp"
+#include <poll.h>
 // #include "beaper.h"
+
+
+#define  MIDI_DEVICE  "/dev/snd/midiC2D0"
+
+enum midiinput {
+NOTE_ON = 144,
+NOTE_OFF = 128,
+CONTROL_CODE = 176,
+AFTERTOUCH = 208,
+};
+
+
 
 unsigned int sampleFrequency = 0;
 unsigned int audioBufferSize = 0;
@@ -96,6 +112,17 @@ double gen_sound(double time){
 int main(int argc, char *argv[]) {
     SDL_Window* window = NULL;
 
+    unsigned char inpacket[4];
+
+    int seqfd = open(MIDI_DEVICE, O_RDONLY);
+    // printf("Error: cannot open %d\n", seqfd);
+    if (seqfd == -1) {
+        printf("Error: cannot open %s\n", MIDI_DEVICE);
+        exit(1);
+    }
+	struct pollfd pfd = { seqfd, POLLIN, 0 };
+
+
     if( SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0 ) {
         std::cout << "Unable to init SDL: " << SDL_GetError() << std::endl;
         return 1;
@@ -115,33 +142,71 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     while(running)
     {
+
+		int ret = poll(&pfd,1,5);
+		if (ret > 0){
+
+         read(seqfd, &inpacket, 1);
+
+         //    // print the MIDI byte if this input packet contains one
+         if (inpacket[0] == NOTE_ON) {
+            read(seqfd, &inpacket, 3);
+            printf("Note on: %d , Velocity: %d, Channel: %d",inpacket[0], inpacket[1],inpacket[2]);
+            envelope.note_on(mixer.getTime());
+            int diff = (inpacket[0]-69);
+            freq  =  pow(2,(float) diff/12)*440;
+            printf("freq: %d %f, %f \n",diff,freq,(double)pow(2,diff));
+            // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
+         }
+         if (inpacket[0] == NOTE_OFF) {
+            read(seqfd, &inpacket, 3);
+            printf("Note off: %d , Velocity: %d, Channel: %d\n",inpacket[0], inpacket[1],inpacket[2]);
+            envelope.note_off(mixer.getTime());
+            // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
+         }
+         if (inpacket[0] == CONTROL_CODE) {
+            read(seqfd, &inpacket, 3);
+            printf("Code: %d , Angle: %f, Channel: %d\n",inpacket[0],(double) inpacket[1]/127*360,inpacket[2]);
+            if (inpacket[0]==118) running=false;
+         }
+         if (inpacket[0] == AFTERTOUCH) {
+            read(seqfd, &inpacket, 1);
+            printf("Aftertouch: %d \n",inpacket[0]);
+         }
+      }
+
+
+
+
+
+
         while(SDL_PollEvent(&event)) {
             switch (event.type) {
                 case SDL_KEYDOWN:
                     if (event.key.keysym.sym && ! event.key.repeat){
-                            envelope.note_on(mixer.getTime());
+                            // envelope.note_on(mixer.getTime());
                     switch (event.key.keysym.sym ) {
                         case SDLK_ESCAPE: running=false; break;
-                        case SDLK_w: freq=261.63; break;
-                        case SDLK_s: freq=277.18; break;
-                        case SDLK_x: freq=293.66; break;
-                        case SDLK_d: freq=311.13; break;
-                        case SDLK_c: freq=329.63; break;
-                        case SDLK_v: freq=349.23; break;
-                        case SDLK_g: freq=369.99; break;
-                        case SDLK_b: freq=392.00; break;
-                        case SDLK_h: freq=415.30; break;
-                        case SDLK_n: freq=440.00; break;
-                        case SDLK_j: freq=466.16; break;
-                        case SDLK_COMMA: freq=493.88; break;
-                        case SDLK_SEMICOLON: freq=523.25; break;
+                        // case SDLK_w: freq=261.63; break;
+                        // case SDLK_s: freq=277.18; break;
+                        // case SDLK_x: freq=293.66; break;
+                        // case SDLK_d: freq=311.13; break;
+                        // case SDLK_c: freq=329.63; break;
+                        // case SDLK_v: freq=349.23; break;
+                        // case SDLK_g: freq=369.99; break;
+                        // case SDLK_b: freq=392.00; break;
+                        // case SDLK_h: freq=415.30; break;
+                        // case SDLK_n: freq=440.00; break;
+                        // case SDLK_j: freq=466.16; break;
+                        // case SDLK_COMMA: freq=493.88; break;
+                        // case SDLK_SEMICOLON: freq=523.25; break;
                         default: break;
                     }
                     }
                     break;
-                case SDL_KEYUP:
-                    envelope.note_off(mixer.getTime());
-                    break;
+                // case SDL_KEYUP:
+                //     envelope.note_off(mixer.getTime());
+                //     break;
                 case SDL_QUIT:
                     running=false;
                     break;
