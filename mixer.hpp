@@ -9,12 +9,12 @@ class Mixer{
         double (*userFunction)(double);
         double getTime(){return v;}
         void setTime(double time){v=time;}
+        static void fillStream(void *_mixer, Uint8 *_stream, int _len);
     private:
         double v;
   
 };
 
-void fillStream(void*, Uint8 *, int);
 
 Mixer::Mixer(unsigned int nSampleRate , unsigned int nChannels , SDL_AudioFormat nBlocks , unsigned int nSamples )
 {
@@ -37,7 +37,7 @@ Mixer::~Mixer(){
    SDL_CloseAudio();
 };
 
-void fillStream(void *_mixer, Uint8 *_stream, int _len) {
+void Mixer::fillStream(void *_mixer, Uint8 *_stream, int _len) {
     Mixer* mixer = (Mixer*) _mixer;
     Sint16 *stream = (Sint16*) _stream;
     for (int i = 0; i < _len/2; i++) {
