@@ -50,7 +50,7 @@ double lerp(double a, double b, double i){
 
 class ADSR_Envelope {
     public:
-        ADSR_Envelope(double startAmp = 1, double attackTime = 0.5, double decayTime = 0.8, double sustainAmp = 0.8, double releaseTime = 1.3);
+        ADSR_Envelope(double startAmp = 0, double attackTime = 0.5, double decayTime = 0.8, double sustainAmp = 0.8, double releaseTime = 1.3);
         double getAmp(double);
         ~ADSR_Envelope(){};
         void note_on(Uint32 time_on) {
@@ -89,12 +89,12 @@ class ADSR_Envelope {
         Uint32 m_TimeOff=0;
 
 
-        double minAttackTime=0;
-        double minDecayTime=0.2;
-        double minSustainAmp=0.2;
-        double minReleaseTime=0.2;
+        double minAttackTime=0.0;
+        double minDecayTime=0.0;
+        double minSustainAmp=0.0;
+        double minReleaseTime=0.0;
 
-        double maxAttackTime=4;
+        double maxAttackTime=2;
         double maxDecayTime=2;
         double maxSustainAmp=1;
         double maxReleaseTime=2;
@@ -138,7 +138,11 @@ double ADSR_Envelope::getAmp(double _time){
     return amp;
 }
 
-ADSR_Envelope::ADSR_Envelope(double startAmp, double attackTime, double decayTime, double sustainAmp, double releaseTime){
+ADSR_Envelope::ADSR_Envelope(double startAmp,
+                             double attackTime,
+                             double decayTime,
+                             double sustainAmp,
+                             double releaseTime){
         m_StartAmp=startAmp;
         m_AttackTime=attackTime;
         m_DecayTime=decayTime;
