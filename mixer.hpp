@@ -6,9 +6,10 @@ class Mixer{
     public:
         Mixer(unsigned int = 44100, unsigned int = 1, SDL_AudioFormat= AUDIO_S16SYS, unsigned int = 4096);
         ~Mixer();
-        double (*userFunction)(double);
+        double (*userFunction)(double,double);
         double getTime(){return v;}
         void setTime(double time){v=time;}
+        double freq;
         static void fillStream(void *_mixer, Uint8 *_stream, int _len);
     private:
         double v;
@@ -41,7 +42,7 @@ void Mixer::fillStream(void *_mixer, Uint8 *_stream, int _len) {
     Mixer* mixer = (Mixer*) _mixer;
     Sint16 *stream = (Sint16*) _stream;
     for (int i = 0; i < _len/2; i++) {
-        stream[i] = mixer->userFunction(mixer->getTime());
+        stream[i] = mixer->userFunction(mixer->getTime(),mixer->freq);
         mixer->setTime(mixer->getTime()+1);
     }
 }

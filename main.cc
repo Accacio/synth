@@ -29,7 +29,6 @@ unsigned int outputAudioBufferSize = 0;
 const int AMPLITUDE = 28000;
 const int FREQUENCY = 44100;
 
-double freq = 0;
 
 
 double min(double a, double b) {
@@ -149,11 +148,33 @@ ADSR_Envelope::ADSR_Envelope(double startAmp, double attackTime, double decayTim
 
 ADSR_Envelope envelope;
 
-double gen_sound(double time){
-    return envelope.getAmp(time)*AMPLITUDE * std::sin(time * freq*2 * M_PI / FREQUENCY);
+// TODO verify fourier
+double square(double time, double freq){
+
+    double timbre =
+        std::sin(time * 1 * freq * 2 * M_PI / FREQUENCY) +
+        std::sin(time * 3 * freq * 2 * M_PI / FREQUENCY)/2 +
+        std::sin(time * 5 * freq * 2 * M_PI / FREQUENCY)/3 +
+        std::sin(time * 7 * freq * 2 * M_PI / FREQUENCY)/4 +
+        std::sin(time * 9 * freq * 2 * M_PI / FREQUENCY)/5;
+    return timbre / (1+1/2+1/3+1/4+1/5);
+}
+double sine(double time, double freq){
+
+    double timbre =
+        std::sin(time * 1 * freq * 2 * M_PI / FREQUENCY);
+    return timbre;
+}
+
+double gen_sound(double time, double freq){
+
+    // double timbre = square(time);
+    double timbre = sine(time, freq);
+    return envelope.getAmp(time)*AMPLITUDE*timbre;
 }
 
 int main(int argc, char *argv[]) {
+    double freq = 0;
     SDL_Window* window = NULL;
 
     unsigned char inpacket[4];
@@ -256,6 +277,7 @@ int main(int argc, char *argv[]) {
                     break;
             }
         }
+        mixer.freq = freq;
     }
 
 
