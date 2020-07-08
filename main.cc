@@ -202,11 +202,11 @@ int main(int argc, char *argv[]) {
     // envelope.getAmp(time(0));
     mixer.userFunction = gen_sound;
 
-    window = SDL_CreateWindow("SDL audio test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
-    if (window == NULL) return 1;
-    SDL_Surface *screensurface = SDL_GetWindowSurface(window);
-    SDL_FillRect(screensurface, NULL, SDL_MapRGB(screensurface->format, 0xFF,0xFF,0xFF));
-    SDL_UpdateWindowSurface(window);
+    // window = SDL_CreateWindow("SDL audio test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
+    // if (window == NULL) return 1;
+    // SDL_Surface *screensurface = SDL_GetWindowSurface(window);
+    // SDL_FillRect(screensurface, NULL, SDL_MapRGB(screensurface->format, 0xFF,0xFF,0xFF));
+    // SDL_UpdateWindowSurface(window);
     bool running = true;
     SDL_Event event;
     while(running)
