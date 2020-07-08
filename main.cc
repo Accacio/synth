@@ -110,19 +110,18 @@ double ADSR_Envelope::getAmp(double _time){
     // std::cout << " timeon " << m_TimeOn ;
     // std::cout << " lifetime " << lifeTime ;
     // std::cout << " play " << play_note;
-    if (play_note){
-      // std::cout << "note on" << std::endl;
     if (lifeTime<=m_AttackTime){
         amp = (lifeTime/m_AttackTime)*m_StartAmp;
     }
-    if (lifeTime>m_AttackTime && lifeTime<=(m_AttackTime+m_DecayTime)){
+    else if (lifeTime>m_AttackTime && lifeTime<=(m_AttackTime+m_DecayTime)){
         amp = ((lifeTime-m_AttackTime)/m_DecayTime)*(m_SustainAmp-m_StartAmp)+m_StartAmp;
     }
-    if (lifeTime>(m_AttackTime+m_DecayTime)){
+    else if (lifeTime>(m_AttackTime+m_DecayTime)){
         amp = m_SustainAmp;
     }
-    }
-    else {
+
+    if (!play_note){
+      // std::cout << "note on" << std::endl;
       // std::cout << "note off" << std::endl;
     // if (lifeTime<=m_AttackTime){
     //     amp = (lifeTime/m_AttackTime)*m_StartAmp;
@@ -130,9 +129,9 @@ double ADSR_Envelope::getAmp(double _time){
     // if (lifeTime>m_AttackTime && lifeTime<=(m_AttackTime+m_DecayTime)){
     //     amp = ((lifeTime-m_AttackTime)/m_DecayTime)*(m_SustainAmp-m_StartAmp)+m_StartAmp;
     // }
-    if (lifeTime>(m_AttackTime+m_DecayTime)){
-        amp = ((time-TimeOff)/m_ReleaseTime) * (0.0 - m_SustainAmp) + m_SustainAmp;
-    }
+    // if (lifeTime>(m_AttackTime+m_DecayTime)){
+        amp = ((time-TimeOff)/m_ReleaseTime) * (0.0 - amp) + amp;
+    // }
     }
     if (amp<0.001) amp = 0;
     return amp;
