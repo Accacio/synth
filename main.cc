@@ -52,6 +52,9 @@ double lerp(double a, double b, double i){
     // printf("%f %f %f",i,newi,-a*(newi-1)+b*newi);
     return -a*(newi-1) + b*newi;
 }
+double ilerp(double a, double b, double i){
+    return (i-a)/(b-a);
+}
 
 class ADSR_Envelope {
     public:
@@ -67,15 +70,29 @@ class ADSR_Envelope {
         void setA(double newA) {
             m_AttackTime = lerp(minAttackTime, maxAttackTime, newA);
         };
+        double getA() {
+            return ilerp(minAttackTime,maxAttackTime, m_AttackTime);
+        };
 
         void setD(double newD) {
             m_DecayTime = lerp(minDecayTime,maxDecayTime,newD);
         };
+        double getD() {
+            return ilerp(minDecayTime,maxDecayTime, m_DecayTime);
+        };
+
         void setS(double newS) {
             m_SustainAmp = lerp(minSustainAmp,maxSustainAmp,newS);
         };
+        double getS() {
+            return ilerp(minSustainAmp,maxSustainAmp,m_SustainAmp);
+        };
+
         void setR(double newR) {
             m_ReleaseTime = lerp(minReleaseTime,maxReleaseTime,newR);
+        };
+        double getR() {
+            return ilerp(minReleaseTime,maxReleaseTime, m_ReleaseTime);
         };
 
         void note_off(Uint32 time_off) {
