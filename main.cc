@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 
     unsigned char inpacket[4];
-
+    int readPacketOk;
     int seqfd = open(MIDI_DEVICE, O_RDONLY);
     // printf("Error: cannot open %d\n", seqfd);
     if (seqfd == -1) {
@@ -241,11 +241,11 @@ int main(int argc, char *argv[]) {
             struct pollfd pfd = { seqfd, POLLIN, 0 };
             if (ret > 0){
 
-                read(seqfd, &inpacket, 1);
+                readPacketOk = read(seqfd, &inpacket, 1);
 
                 //    // print the MIDI byte if this input packet contains one
                 if (inpacket[0] == NOTE_ON) {
-                    read(seqfd, &inpacket, 3);
+                    readPacketOk = read(seqfd, &inpacket, 3);
                     printf("Note on: %d , Velocity: %d, Channel: %d",inpacket[0], inpacket[1],inpacket[2]);
                     envelope.note_on(mixer.getTime());
                     int diff = (inpacket[0]-69);
@@ -254,13 +254,13 @@ int main(int argc, char *argv[]) {
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
                 }
                 if (inpacket[0] == NOTE_OFF) {
-                    read(seqfd, &inpacket, 3);
+                    readPacketOk = read(seqfd, &inpacket, 3);
                     printf("Note off: %d , Velocity: %d, Channel: %d\n",inpacket[0], inpacket[1],inpacket[2]);
                     envelope.note_off(mixer.getTime());
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
                 }
                 if (inpacket[0] == CONTROL_CODE) {
-                    read(seqfd, &inpacket, 3);
+                    readPacketOk = read(seqfd, &inpacket, 3);
                     printf("Code: %d , Angle: %f, Channel: %d\n",inpacket[0],(double) inpacket[1]/127*360,inpacket[2]);
                     // envelope.setD((double) inpacket[1]/127);
                     if (inpacket[0]==20) envelope.setA((double) inpacket[1]/127);
@@ -270,7 +270,7 @@ int main(int argc, char *argv[]) {
                     if (inpacket[0]==118) running=false;
                 }
                 if (inpacket[0] == AFTERTOUCH) {
-                    read(seqfd, &inpacket, 1);
+                    readPacketOk = read(seqfd, &inpacket, 1);
                     printf("Aftertouch: %d \n",inpacket[0]);
                 }
             }
