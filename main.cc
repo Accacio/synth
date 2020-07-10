@@ -245,13 +245,37 @@ int main(int argc, char *argv[]) {
         SDL_Surface *screensurface = SDL_GetWindowSurface(window);
         SDL_FillRect(screensurface, NULL, SDL_MapRGB(screensurface->format, 0x69,0x95,0xED));
         SDL_UpdateWindowSurface(window);
+    // }
     bool running = true;
     SDL_Event event;
+
+    bool show_demo_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+    float A;
+    float D;
+    float S;
+    float R;
     while(running)
     {
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
+        A = envelope.getA();
+        D = envelope.getD();
+        S = envelope.getS();
+        R = envelope.getR();
+        ImGui::Begin("Control");
+        ImGui::SliderFloat("Attack", &A, 0, 1);
+        ImGui::SliderFloat("Decay", &D, 0, 1);
+        ImGui::SliderFloat("Sustain", &S, 0, 1);
+        ImGui::SliderFloat("Release", &R, 0, 1);
+        ImGui::End();
+        envelope.setA(A);
+        envelope.setD(D);
+        envelope.setS(S);
+        envelope.setR(R);
 
         if (seqfd > 0) {
             int ret = poll(&pfd,1,5);
@@ -299,6 +323,8 @@ int main(int argc, char *argv[]) {
 
 
         while(SDL_PollEvent(&event)) {
+
+            // ImGui_ImplSDL2_ProcessEvent(&event);
             switch (event.type) {
                 case SDL_KEYDOWN:
                     if (event.key.keysym.sym && ! event.key.repeat){
