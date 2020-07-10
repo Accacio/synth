@@ -5,9 +5,14 @@
 #include <time.h>
 #include <unistd.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_main.h>
 #include "mixer.hpp"
 #include <poll.h>
+
+#include "imgui.h"
+#include "imgui_impl_sdl.h"
+#include "imgui_impl_opengl2.h"
 // #include "beaper.h"
 
 
@@ -179,6 +184,7 @@ double gen_sound(double time, double freq){
 int main(int argc, char *argv[]) {
     double freq = 0;
     SDL_Window* window = NULL;
+    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 
     unsigned char inpacket[4];
 
@@ -201,15 +207,34 @@ int main(int argc, char *argv[]) {
     // envelope.getAmp(time(0));
     mixer.userFunction = gen_sound;
 
-    // window = SDL_CreateWindow("SDL audio test", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_SHOWN);
-    // if (window == NULL) return 1;
-    // SDL_Surface *screensurface = SDL_GetWindowSurface(window);
-    // SDL_FillRect(screensurface, NULL, SDL_MapRGB(screensurface->format, 0xFF,0xFF,0xFF));
-    // SDL_UpdateWindowSurface(window);
+        window = SDL_CreateWindow("Mysynth", 10, 10, 800, 600, SDL_WINDOW_SHOWN);
+        if (window == NULL) return 1;
+        SDL_GL_MakeCurrent(window, gl_context);
+        SDL_GL_SetSwapInterval(1); // Enable vsync
+
+        // Setup Dear ImGui context
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+    // Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+
+
+        // Setup Platform/Renderer bindings
+        ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
+        ImGui_ImplOpenGL2_Init();
+
+        SDL_Surface *screensurface = SDL_GetWindowSurface(window);
+        SDL_FillRect(screensurface, NULL, SDL_MapRGB(screensurface->format, 0x69,0x95,0xED));
+        SDL_UpdateWindowSurface(window);
     bool running = true;
     SDL_Event event;
     while(running)
     {
+        ImGui_ImplOpenGL2_NewFrame();
+        ImGui_ImplSDL2_NewFrame(window);
+        ImGui::NewFrame();
 
         if (seqfd > 0) {
             int ret = poll(&pfd,1,5);
@@ -289,10 +314,21 @@ int main(int argc, char *argv[]) {
             }
         }
         mixer.freq = freq;
+
+        ImGui::Render();
+        glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
+        //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
+        ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
+        SDL_GL_SwapWindow(window);
     }
 
+    ImGui_ImplOpenGL2_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
 
-
+    SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
    return 0;
