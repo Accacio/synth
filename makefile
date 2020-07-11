@@ -4,7 +4,7 @@
 # @file
 # @version 0.1
 #
-SOURCES = main.cc
+SOURCES = main.cpp
 # SOURCES += midi.cc
 
 EXE = synth

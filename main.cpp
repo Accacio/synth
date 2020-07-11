@@ -25,8 +25,6 @@ CONTROL_CODE = 176,
 AFTERTOUCH = 208,
 };
 
-
-
 unsigned int sampleFrequency = 0;
 unsigned int audioBufferSize = 0;
 unsigned int outputAudioBufferSize = 0;
@@ -97,7 +95,7 @@ class ADSR_Envelope {
         void note_off(Uint32 time_off) {
             play_note=false;
             m_TimeOff = time_off;
-            std::cout<< " set time off";
+            // std::cout<< " set time off";
         };
     private:
         bool play_note=false;
@@ -127,10 +125,6 @@ double ADSR_Envelope::getAmp(double _time){
     double time = _time/FREQUENCY;
     double TimeOff = m_TimeOff/FREQUENCY;
     double amp=m_StartAmp;
-    // std::cout << "time " << _time ;
-    // std::cout << " timeon " << m_TimeOn ;
-    // std::cout << " lifetime " << lifeTime ;
-    // std::cout << " play " << play_note;
     if (lifeTime<=m_AttackTime){
         amp = (lifeTime/m_AttackTime)*m_StartAmp;
     }
@@ -141,19 +135,7 @@ double ADSR_Envelope::getAmp(double _time){
         amp = m_SustainAmp;
     }
 
-    if (!play_note){
-      // std::cout << "note on" << std::endl;
-      // std::cout << "note off" << std::endl;
-    // if (lifeTime<=m_AttackTime){
-    //     amp = (lifeTime/m_AttackTime)*m_StartAmp;
-    // }
-    // if (lifeTime>m_AttackTime && lifeTime<=(m_AttackTime+m_DecayTime)){
-    //     amp = ((lifeTime-m_AttackTime)/m_DecayTime)*(m_SustainAmp-m_StartAmp)+m_StartAmp;
-    // }
-    // if (lifeTime>(m_AttackTime+m_DecayTime)){
-        amp = ((time-TimeOff)/m_ReleaseTime) * (0.0 - amp) + amp;
-    // }
-    }
+    if (!play_note) amp = ((time-TimeOff)/m_ReleaseTime) * (0.0 - amp) + amp;
     if (amp<0.001) amp = 0;
     return amp;
 }
@@ -223,6 +205,7 @@ int main(int argc, char *argv[]) {
     // envelope.getAmp(time(0));
     mixer.userFunction = gen_sound;
 
+    // if (seqfd ==-1) {
         window = SDL_CreateWindow("Mysynth", 10, 10, 800, 600, SDL_WINDOW_SHOWN);
         if (window == NULL) return 1;
         SDL_GL_MakeCurrent(window, gl_context);
