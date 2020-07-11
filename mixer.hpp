@@ -12,6 +12,7 @@ class Mixer{
         void setTime(double time){v=time;}
         double freq;
         static const int AMPLITUDE = 28000;
+        static double clip(double Amp, double AmpMax);
         static void fillStream(void *_mixer, Uint8 *_stream, int _len);
     private:
         double v;
