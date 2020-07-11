@@ -57,7 +57,7 @@ double ilerp(double a, double b, double i){
 
 class ADSR_Envelope {
     public:
-        ADSR_Envelope(double startAmp = 0, double attackTime = 0.5, double decayTime = 0.8, double sustainAmp = 0.8, double releaseTime = 1.3);
+        ADSR_Envelope(double startAmp = 0, double attackTime = 0.1, double decayTime = 0.01, double sustainAmp = 0.8, double releaseTime = 0.2);
         double getAmp(double);
         ~ADSR_Envelope(){};
         void note_on(Uint32 time_on) {
