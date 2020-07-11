@@ -110,10 +110,10 @@ class ADSR_Envelope {
         Uint32 m_TimeOff=0;
 
 
-        double minAttackTime=0.0;
-        double minDecayTime=0.0;
-        double minSustainAmp=0.0;
-        double minReleaseTime=0.0;
+        double minAttackTime=0.01;
+        double minDecayTime=0.01;
+        double minSustainAmp=0.1;
+        double minReleaseTime=0.01;
 
         double maxAttackTime=2;
         double maxDecayTime=2;
