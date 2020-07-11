@@ -18,7 +18,7 @@ INCLUDES = -Iimgui/ -Iimgui/examples
 LIBS =-lGL -ldl `sdl2-config --libs`
 INCLUDES += `sdl2-config --cflags`
 
-%.o:%.cc
+%.o:%.cpp
 	@echo Compiling $@
 	@$(CXX) $(INCLUDES) -c -o $@ $<
 
