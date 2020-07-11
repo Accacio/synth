@@ -1,6 +1,7 @@
 #ifndef __MIXER_H_
 #define __MIXER_H_
 #include <SDL2/SDL_audio.h>
+#include <math.h>
 
 class Mixer{
     public:
@@ -10,6 +11,7 @@ class Mixer{
         double getTime(){return v;}
         void setTime(double time){v=time;}
         double freq;
+        static const int AMPLITUDE = 28000;
         static void fillStream(void *_mixer, Uint8 *_stream, int _len);
     private:
         double v;
@@ -38,11 +40,15 @@ Mixer::~Mixer(){
    SDL_CloseAudio();
 };
 
+double Mixer::clip(double Amp, double AmpMax){
+    return fmax(fmin(Amp, AmpMax),-AmpMax);
+}
+
 void Mixer::fillStream(void *_mixer, Uint8 *_stream, int _len) {
     Mixer* mixer = (Mixer*) _mixer;
     Sint16 *stream = (Sint16*) _stream;
     for (int i = 0; i < _len/2; i++) {
-        stream[i] = mixer->userFunction(mixer->getTime(),mixer->freq);
+        stream[i] = clip(mixer->userFunction(mixer->getTime(),mixer->freq),1.0)*AMPLITUDE;
         mixer->setTime(mixer->getTime()+1);
     }
 }

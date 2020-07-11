@@ -31,7 +31,6 @@ unsigned int sampleFrequency = 0;
 unsigned int audioBufferSize = 0;
 unsigned int outputAudioBufferSize = 0;
 
-const int AMPLITUDE = 28000;
 const int FREQUENCY = 44100;
 
 
@@ -195,7 +194,7 @@ double gen_sound(double time, double freq){
 
     // double timbre = square(time);
     double timbre = sine(time, freq);
-    return envelope.getAmp(time)*AMPLITUDE*timbre;
+    return envelope.getAmp(time)*timbre;
 }
 
 int main(int argc, char *argv[]) {
