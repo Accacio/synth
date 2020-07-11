@@ -29,10 +29,6 @@ unsigned int sampleFrequency = 0;
 unsigned int audioBufferSize = 0;
 unsigned int outputAudioBufferSize = 0;
 
-const int FREQUENCY = 44100;
-
-
-
 double min(double a, double b) {
     // printf("%f %f",a,b);
     return (a>b)?b:a;
@@ -121,9 +117,9 @@ class ADSR_Envelope {
 };
 
 double ADSR_Envelope::getAmp(double _time){
-    double lifeTime = (_time - m_TimeOn)/FREQUENCY;
-    double time = _time/FREQUENCY;
-    double TimeOff = m_TimeOff/FREQUENCY;
+    double lifeTime = (_time - m_TimeOn);
+    double time = _time;
+    double TimeOff = m_TimeOff;
     double amp=m_StartAmp;
     if (lifeTime<=m_AttackTime){
         amp = (lifeTime/m_AttackTime)*m_StartAmp;
@@ -158,17 +154,17 @@ ADSR_Envelope envelope;
 double square(double time, double freq){
 
     double timbre =
-        std::sin(time * 1 * freq * 2 * M_PI / FREQUENCY) +
-        std::sin(time * 3 * freq * 2 * M_PI / FREQUENCY)/2 +
-        std::sin(time * 5 * freq * 2 * M_PI / FREQUENCY)/3 +
-        std::sin(time * 7 * freq * 2 * M_PI / FREQUENCY)/4 +
-        std::sin(time * 9 * freq * 2 * M_PI / FREQUENCY)/5;
+        std::sin(time * 1 * freq * 2 * M_PI ) +
+        std::sin(time * 3 * freq * 2 * M_PI )/2 +
+        std::sin(time * 5 * freq * 2 * M_PI )/3 +
+        std::sin(time * 7 * freq * 2 * M_PI )/4 +
+        std::sin(time * 9 * freq * 2 * M_PI )/5;
     return timbre / (1+1/2+1/3+1/4+1/5);
 }
 double sine(double time, double freq){
 
     double timbre =
-        std::sin(time * 1 * freq * 2 * M_PI / FREQUENCY);
+        std::sin(time * 1 * freq * 2 * M_PI );
     return timbre;
 }
 
