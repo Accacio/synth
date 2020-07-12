@@ -60,6 +60,40 @@ double noise(double time, double freq){
     return timbre;
 }
 
+class Bell : public Instrument {
+    public:
+        Bell() {
+            m_Volume = 1.0;
+        }
+
+        double gen_sound(double time, double freq){
+            // double timbre = sine(time, freq);
+            double timbre = sine(time, freq)
+                // +saw(time, 0.5*freq)
+                // +sine(time, pow(2,(float) 3/12)*freq)
+                // +sine(time, pow(2,(float) 7/12)*freq)
+                // +sine(time, pow(2,(float) 7/12)*freq);
+                ;
+            return m_Volume*m_envelope.getAmp(time) * timbre;
+        }
+};
+class Saw: public Instrument {
+    public:
+        Saw() {
+            m_Volume = 1.0;
+        }
+
+        double gen_sound(double time, double freq){
+            // double timbre = sine(time, freq);
+            double timbre = saw(time, 2*freq)
+                // +saw(time, 0.5*freq)
+                // +sine(time, pow(2,(float) 3/12)*freq)
+                // +sine(time, pow(2,(float) 7/12)*freq)
+                // +sine(time, pow(2,(float) 7/12)*freq);
+                ;
+            return m_Volume*m_envelope.getAmp(time) * timbre;
+        }
+};
 int main(int argc, char *argv[]) {
     double freq = 0;
     SDL_Window* window = NULL;
