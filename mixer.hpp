@@ -22,6 +22,7 @@ class Mixer{
         static void fillStream(void *_mixer, Uint8 *_stream, int _len);
     private:
         double v;
+                void incTime(){v+=1;}
   
 };
 
