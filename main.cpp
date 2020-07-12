@@ -28,14 +28,15 @@ AFTERTOUCH = 208,
 
 // TODO verify fourier
 double square(double time, double freq){
+    double timbre = std::sin(time * 1 * freq * 2 * M_PI )>0? 1: -1;
+    return timbre*0.8;
+}
+
+double saw(double time, double freq){
 
     double timbre =
-        std::sin(time * 1 * freq * 2 * M_PI ) +
-        std::sin(time * 3 * freq * 2 * M_PI )/2 +
-        std::sin(time * 5 * freq * 2 * M_PI )/3 +
-        std::sin(time * 7 * freq * 2 * M_PI )/4 +
-        std::sin(time * 9 * freq * 2 * M_PI )/5;
-    return timbre / (1+1/2+1/3+1/4+1/5);
+       (2.0/M_PI)*(freq*M_PI* fmod(time, 1/freq))- M_PI/2;
+    return timbre;
 }
 double sine(double time, double freq){
 
@@ -44,11 +45,19 @@ double sine(double time, double freq){
     return timbre;
 }
 
-double gen_sound(double time, double freq){
+// ADSR_Envelope envelope;
+// double gen_sound(double time, double freq){
 
-    // double timbre = square(time);
-    double timbre = sine(time, freq);
-    return envelope.getAmp(time)*timbre;
+//     // double timbre = square(time);
+//     double timbre = sine(time, freq);
+//     return envelope.getAmp(time)*timbre;
+// }
+
+double noise(double time, double freq){
+
+    double timbre =
+        2*((double) rand()/ (double) RAND_MAX)-1;
+    return timbre;
 }
 
 int main(int argc, char *argv[]) {
