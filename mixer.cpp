@@ -33,7 +33,16 @@ void Mixer::fillStream(void *_mixer, Uint8 *_stream, int _len) {
     Mixer* mixer = (Mixer*) _mixer;
     Sint16 *stream = (Sint16*) _stream;
     for (int i = 0; i < _len/2; i++) {
-        stream[i] = clip(mixer->userFunction(mixer->getTime(),mixer->freq),1.0)*AMPLITUDE;
+        stream[i]=0;
+        if (!mixer->m_instruments.empty()){
+            int instruments = mixer->m_instruments.size();
+            for (int inst = 0; inst < instruments;inst++){
+                stream[i] += (double) clip(mixer->m_instruments[inst]->gen_sound(mixer->getTime(),mixer->freq),1.0)*AMPLITUDE/instruments;
+            }
+
+        } else {
+            stream[i]=0;
+        }
         mixer->incTime();
     }
 }
