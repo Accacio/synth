@@ -1,15 +1,15 @@
 
 #include "instrument.hpp"
 
-double ADSR_Envelope::getAmp(double _time){
+double ADSR_Envelope::getAmp(double _time, double _timeOn, double _timeOff,bool &_active){
     // std::cout << "Getting Amp" << std::endl;
     // std::cout << "Time: " << _time << std::endl;
     // std::cout << "Time on: " << m_TimeOn << std::endl;
     // std::cout << "Time off: " << m_TimeOff << std::endl;
     // std::cout << "Playnote : " << play_note << std::endl;
-    double lifeTime = (_time - m_TimeOn);
+    double lifeTime = (_time - _timeOn);
     double time = _time;
-    double TimeOff = m_TimeOff;
+    double TimeOff = _timeOff;
     double amp=m_StartAmp;
     if (lifeTime<=m_AttackTime){
         amp = (lifeTime/m_AttackTime)*m_StartAmp;
@@ -21,8 +21,13 @@ double ADSR_Envelope::getAmp(double _time){
         amp = m_SustainAmp;
     }
 
-    if (!play_note) amp = ((time-TimeOff)/m_ReleaseTime) * (0.0 - amp) + amp;
-    if (amp<0.001) amp = 0;
+    if (time>TimeOff) {
+        amp = ((time-TimeOff)/m_ReleaseTime) * (0.0 - amp) + amp;
+        if (amp<0.001) {
+            amp = 0;
+            _active = false;
+        }
+    }
 
     // std::cout << "Amp: " << amp << std::endl;
     return amp;
