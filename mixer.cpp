@@ -37,3 +37,7 @@ void Mixer::fillStream(void *_mixer, Uint8 *_stream, int _len) {
         mixer->incTime();
     }
 }
+
+void Mixer::addInstrument(Instrument *instrument){
+    m_instruments.push_back(instrument);
+}
