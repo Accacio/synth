@@ -94,8 +94,13 @@ class Saw: public Instrument {
             return m_Volume*m_envelope.getAmp(time) * timbre;
         }
 };
+
+
 int main(int argc, char *argv[]) {
     double freq = 0;
+    Instrument *bell = new Bell();
+    Instrument *saw= new Saw();
+
     SDL_Window* window = NULL;
     SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 
@@ -116,9 +121,11 @@ int main(int argc, char *argv[]) {
     }
     // Mixer mixer = Mixer(22050,1,AUDIO_S16,512);
     Mixer mixer = Mixer();
-    envelope = ADSR_Envelope();
+    // envelope = ADSR_Envelope();
     // envelope.getAmp(time(0));
-    mixer.userFunction = gen_sound;
+    mixer.addInstrument(bell);
+    mixer.addInstrument(saw);
+    // mixer.userFunction = gen_sound;
 
     // if (seqfd ==-1) {
         window = SDL_CreateWindow("Mysynth", 10, 10, 800, 600, SDL_WINDOW_SHOWN);
@@ -159,20 +166,20 @@ int main(int argc, char *argv[]) {
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
-        A = envelope.getA();
-        D = envelope.getD();
-        S = envelope.getS();
-        R = envelope.getR();
+        A = bell->m_envelope.getA();
+        D = bell->m_envelope.getD();
+        S = bell->m_envelope.getS();
+        R = bell->m_envelope.getR();
         ImGui::Begin("Control");
         ImGui::SliderFloat("Attack", &A, 0, 1);
         ImGui::SliderFloat("Decay", &D, 0, 1);
         ImGui::SliderFloat("Sustain", &S, 0, 1);
         ImGui::SliderFloat("Release", &R, 0, 1);
         ImGui::End();
-        envelope.setA(A);
-        envelope.setD(D);
-        envelope.setS(S);
-        envelope.setR(R);
+        bell->m_envelope.setA(A);
+        bell->m_envelope.setD(D);
+        bell->m_envelope.setS(S);
+        bell->m_envelope.setR(R);
 
         if (seqfd > 0) {
             int ret = poll(&pfd,1,5);
@@ -185,7 +192,9 @@ int main(int argc, char *argv[]) {
                 if (inpacket[0] == NOTE_ON) {
                     readPacketOk = read(seqfd, &inpacket, 3);
                     printf("Note on: %d , Velocity: %d, Channel: %d",inpacket[0], inpacket[1],inpacket[2]);
-                    envelope.note_on(mixer.getTime());
+                    // envelope.note_on(mixer.getTime());
+                    bell->m_envelope.note_on(mixer.getTime());
+                    saw->m_envelope.note_on(mixer.getTime());
                     int diff = (inpacket[0]-69);
                     freq  =  pow(2,(float) diff/12)*440;
                     printf("freq: %d %f, %f \n",diff,freq,(double)pow(2,diff));
@@ -194,17 +203,18 @@ int main(int argc, char *argv[]) {
                 if (inpacket[0] == NOTE_OFF) {
                     readPacketOk = read(seqfd, &inpacket, 3);
                     printf("Note off: %d , Velocity: %d, Channel: %d\n",inpacket[0], inpacket[1],inpacket[2]);
-                    envelope.note_off(mixer.getTime());
+                    // envelope.note_off(mixer.getTime());
+                    bell->m_envelope.note_off(mixer.getTime());
+                    saw->m_envelope.note_off(mixer.getTime());
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
                 }
                 if (inpacket[0] == CONTROL_CODE) {
                     readPacketOk = read(seqfd, &inpacket, 3);
                     printf("Code: %d , Angle: %f, Channel: %d\n",inpacket[0],(double) inpacket[1]/127*360,inpacket[2]);
-                    // envelope.setD((double) inpacket[1]/127);
-                    if (inpacket[0]==20) envelope.setA((double) inpacket[1]/127);
-                    if (inpacket[0]==21) envelope.setD((double) inpacket[1]/127);
-                    if (inpacket[0]==22) envelope.setS((double) inpacket[1]/127);
-                    if (inpacket[0]==23) envelope.setR((double) inpacket[1]/127);
+                    if (inpacket[0]==20) bell->m_envelope.setA((double) inpacket[1]/127);
+                    if (inpacket[0]==21) bell->m_envelope.setD((double) inpacket[1]/127);
+                    if (inpacket[0]==22) bell->m_envelope.setS((double) inpacket[1]/127);
+                    if (inpacket[0]==23) bell->m_envelope.setR((double) inpacket[1]/127);
                     if (inpacket[0]==118) running=false;
                 }
                 if (inpacket[0] == AFTERTOUCH) {
@@ -225,7 +235,7 @@ int main(int argc, char *argv[]) {
             switch (event.type) {
                 case SDL_KEYDOWN:
                     if (event.key.keysym.sym && ! event.key.repeat){
-                            envelope.note_on(mixer.getTime());
+                            bell->m_envelope.note_on(mixer.getTime());
                     switch (event.key.keysym.sym ) {
                         case SDLK_ESCAPE: running=false; break;
                         case SDLK_w: freq=261.63; break;
@@ -246,7 +256,7 @@ int main(int argc, char *argv[]) {
                     }
                     break;
                 case SDL_KEYUP:
-                    envelope.note_off(mixer.getTime());
+                    bell->m_envelope.note_off(mixer.getTime());
                     break;
                 case SDL_QUIT:
                     running=false;
