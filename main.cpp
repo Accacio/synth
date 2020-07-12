@@ -26,9 +26,6 @@ CONTROL_CODE = 176,
 AFTERTOUCH = 208,
 };
 
-unsigned int sampleFrequency = 0;
-unsigned int audioBufferSize = 0;
-unsigned int outputAudioBufferSize = 0;
 
 
 class ADSR_Envelope {
