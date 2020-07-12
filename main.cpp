@@ -8,7 +8,7 @@
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_main.h>
 #include "mixer.hpp"
-#include "aux.hpp"
+#include "instrument.hpp"
 #include <poll.h>
 
 #include "imgui.h"
@@ -25,109 +25,6 @@ NOTE_OFF = 128,
 CONTROL_CODE = 176,
 AFTERTOUCH = 208,
 };
-
-
-
-class ADSR_Envelope {
-    public:
-        ADSR_Envelope(double startAmp = 0, double attackTime = 0.1, double decayTime = 0.01, double sustainAmp = 0.8, double releaseTime = 0.2);
-        double getAmp(double);
-        ~ADSR_Envelope(){};
-        void note_on(Uint32 time_on) {
-            play_note=true;
-            m_TimeOn = time_on;
-            // std::cout<< " set time on";
-        };
-
-        void setA(double newA) {
-            m_AttackTime = lerp(minAttackTime, maxAttackTime, newA);
-        };
-        double getA() {
-            return ilerp(minAttackTime,maxAttackTime, m_AttackTime);
-        };
-
-        void setD(double newD) {
-            m_DecayTime = lerp(minDecayTime,maxDecayTime,newD);
-        };
-        double getD() {
-            return ilerp(minDecayTime,maxDecayTime, m_DecayTime);
-        };
-
-        void setS(double newS) {
-            m_SustainAmp = lerp(minSustainAmp,maxSustainAmp,newS);
-        };
-        double getS() {
-            return ilerp(minSustainAmp,maxSustainAmp,m_SustainAmp);
-        };
-
-        void setR(double newR) {
-            m_ReleaseTime = lerp(minReleaseTime,maxReleaseTime,newR);
-        };
-        double getR() {
-            return ilerp(minReleaseTime,maxReleaseTime, m_ReleaseTime);
-        };
-
-        void note_off(Uint32 time_off) {
-            play_note=false;
-            m_TimeOff = time_off;
-            // std::cout<< " set time off";
-        };
-    private:
-        bool play_note=false;
-        double m_StartAmp;
-        double m_AttackTime;
-        double m_DecayTime;
-        double m_SustainAmp;
-        double m_ReleaseTime;
-        Uint32 m_TimeOn=0;
-        Uint32 m_TimeOff=0;
-
-
-        double minAttackTime=0.01;
-        double minDecayTime=0.01;
-        double minSustainAmp=0.1;
-        double minReleaseTime=0.01;
-
-        double maxAttackTime=2;
-        double maxDecayTime=2;
-        double maxSustainAmp=1;
-        double maxReleaseTime=2;
-
-};
-
-double ADSR_Envelope::getAmp(double _time){
-    double lifeTime = (_time - m_TimeOn);
-    double time = _time;
-    double TimeOff = m_TimeOff;
-    double amp=m_StartAmp;
-    if (lifeTime<=m_AttackTime){
-        amp = (lifeTime/m_AttackTime)*m_StartAmp;
-    }
-    else if (lifeTime>m_AttackTime && lifeTime<=(m_AttackTime+m_DecayTime)){
-        amp = ((lifeTime-m_AttackTime)/m_DecayTime)*(m_SustainAmp-m_StartAmp)+m_StartAmp;
-    }
-    else if (lifeTime>(m_AttackTime+m_DecayTime)){
-        amp = m_SustainAmp;
-    }
-
-    if (!play_note) amp = ((time-TimeOff)/m_ReleaseTime) * (0.0 - amp) + amp;
-    if (amp<0.001) amp = 0;
-    return amp;
-}
-
-ADSR_Envelope::ADSR_Envelope(double startAmp,
-                             double attackTime,
-                             double decayTime,
-                             double sustainAmp,
-                             double releaseTime){
-        m_StartAmp=startAmp;
-        m_AttackTime=attackTime;
-        m_DecayTime=decayTime;
-        m_SustainAmp=sustainAmp;
-        m_ReleaseTime=releaseTime;
-}
-
-ADSR_Envelope envelope;
 
 // TODO verify fourier
 double square(double time, double freq){
