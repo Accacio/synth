@@ -8,6 +8,7 @@
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_main.h>
 #include "mixer.hpp"
+#include "aux.hpp"
 #include <poll.h>
 
 #include "imgui.h"
@@ -29,25 +30,6 @@ unsigned int sampleFrequency = 0;
 unsigned int audioBufferSize = 0;
 unsigned int outputAudioBufferSize = 0;
 
-double min(double a, double b) {
-    // printf("%f %f",a,b);
-    return (a>b)?b:a;
-}
-
-double max(double a, double b) {
-    // printf("%f %f",a,b);
-    return (a<b)?b:a;
-}
-
-double lerp(double a, double b, double i){
-    double newi= max(0,min(1,i));
-    // TODO verificar
-    // printf("%f %f %f",i,newi,-a*(newi-1)+b*newi);
-    return -a*(newi-1) + b*newi;
-}
-double ilerp(double a, double b, double i){
-    return (i-a)/(b-a);
-}
 
 class ADSR_Envelope {
     public:
