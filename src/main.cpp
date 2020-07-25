@@ -1,4 +1,11 @@
 
+#include <poll.h>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 #include <iostream>
 #include <fcntl.h>
 #include <cmath>
@@ -10,7 +17,7 @@
 #include "mixer.hpp"
 #include "instrument.hpp"
 #include <poll.h>
-
+#include <algorithm>
 #include "imgui.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl2.h"
@@ -26,7 +33,6 @@ CONTROL_CODE = 176,
 AFTERTOUCH = 208,
 };
 
-// TODO verify fourier
 double square(double time, double freq){
     double timbre = std::sin(time * 1 * freq * 2 * M_PI )>0? 1: -1;
     return timbre*0.8;
@@ -44,14 +50,6 @@ double sine(double time, double freq){
         std::sin(time * 1 * freq * 2 * M_PI );
     return timbre;
 }
-
-// ADSR_Envelope envelope;
-// double gen_sound(double time, double freq){
-
-//     // double timbre = square(time);
-//     double timbre = sine(time, freq);
-//     return envelope.getAmp(time)*timbre;
-// }
 
 double noise(double time, double freq){
 
@@ -79,10 +77,8 @@ class Bell : public Instrument {
                     active = true;
                     env = m_envelope.getAmp(time, m_notes[i].timeOn, m_notes[i].timeOff,m_notes[i].active);
                     // if(i==0) std::cout << env << std::endl;
-                    sound =(double)  sine(time-m_notes[i].timeOn, scale(m_notes[i].id))/m_notes.size();
+                    sound =(double)  sine(time-m_notes[i].timeOn, scale(m_notes[i].id))/12;
                     timbre += sound*env;
-                    // if (!active && (env < 0.1)) m_notes[i].active = false;
-                    // std::cout << i <<" note:" << m_notes[i].id << " timeOn: " << m_notes[i].timeOn  << " timeOff: "<< m_notes[i].timeOff << " active: " << active << std::endl;
                 }
 
                 std::vector<Note>::iterator n = m_notes.begin();
@@ -92,17 +88,7 @@ class Bell : public Instrument {
                     else
                         ++n;
 
-                // for (int i = m_notes.size()-1; i > 0;i--){
-                //     if (!m_notes[i].active) m_notes.erase(m_notes.begin()+i-1);
-                // }
-                // if (!m_notes[0].active) m_notes.erase(m_notes.begin());
             }
-
-                // +saw(time, 0.5*freq)
-                // +sine(time, pow(2,(float) 3/12)*freq)
-                // +sine(time, pow(2,(float) 7/12)*freq)
-                // +sine(time, pow(2,(float) 7/12)*freq);
-                ;
             return m_Volume* timbre;
         }
 };
@@ -114,14 +100,30 @@ class Saw: public Instrument {
 
         double gen_sound(double time, double freq){
             // double timbre = sine(time, freq);
-            bool active = true;
-            double timbre = saw(time, 2*freq)
-                // +saw(time, 0.5*freq)
-                // +sine(time, pow(2,(float) 3/12)*freq)
-                // +sine(time, pow(2,(float) 7/12)*freq)
-                // +sine(time, pow(2,(float) 7/12)*freq);
-                ;
-            return m_Volume*m_envelope.getAmp(time,0,0,active) * timbre;
+            double timbre = 0;
+            double sound = 0;
+            double env = 0;
+            bool active ;
+
+            // std::cout << m_notes.size() << " " << std::endl;
+            if(!m_notes.empty()){
+                for (int i = 0; i < m_notes.size();i++){
+                    active = true;
+                    env = m_envelope.getAmp(time, m_notes[i].timeOn, m_notes[i].timeOff,m_notes[i].active);
+                    // if(i==0) std::cout << env << std::endl;
+                    sound = (double)  saw(time-m_notes[i].timeOn, scale(m_notes[i].id))/12;
+                    timbre += sound*env;
+                }
+
+                std::vector<Note>::iterator n = m_notes.begin();
+                while (n != m_notes.end())
+                    if (!n->active)
+                        n = m_notes.erase(n);
+                    else
+                        ++n;
+
+            }
+            return m_Volume* timbre;
         }
 };
 
@@ -143,18 +145,24 @@ int main(int argc, char *argv[]) {
         printf("Error: cannot open %s\n", MIDI_DEVICE);
         // exit(1);
     }
-	struct pollfd pfd = { seqfd, POLLIN, 0 };
-
+    int nfds = 1;
+	struct pollfd *pfd;
+    pfd = (struct pollfd*) calloc(nfds,sizeof(struct pollfd));
+    for (int i =0;i<nfds;i++){
+        pfd[i].fd = seqfd;
+        pfd[i].events = POLLIN;
+       
+    }
 
     if( SDL_Init(SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO) < 0 ) {
         std::cout << "Unable to init SDL: " << SDL_GetError() << std::endl;
         return 1;
     }
-    // Mixer mixer = Mixer(22050,1,AUDIO_S16,512);
-    Mixer mixer = Mixer();
+    Mixer mixer = Mixer(44100,1,AUDIO_S16SYS,256);
+    // Mixer mixer = Mixer();
     // envelope = ADSR_Envelope();
     // envelope.getAmp(time(0));
-    mixer.addInstrument(bell);
+    // mixer.addInstrument(bell);
     mixer.addInstrument(saw);
     // mixer.userFunction = gen_sound;
 
@@ -169,8 +177,8 @@ int main(int argc, char *argv[]) {
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-    // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
+        // Setup Dear ImGui style
+        // ImGui::StyleColorsDark();
 
 
         // Setup Platform/Renderer bindings
@@ -186,43 +194,39 @@ int main(int argc, char *argv[]) {
 
     bool show_demo_window = true;
     bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-    float A;
-    float D;
-    float S;
-    float R;
+    float A; float D; float S; float R;
+
     while(running)
     {
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
-        A = bell->m_envelope.getA();
-        D = bell->m_envelope.getD();
-        S = bell->m_envelope.getS();
-        R = bell->m_envelope.getR();
+        A = mixer.m_instruments[0]->m_envelope.getA();
+        D = mixer.m_instruments[0]->m_envelope.getD();
+        S = mixer.m_instruments[0]->m_envelope.getS();
+        R = mixer.m_instruments[0]->m_envelope.getR();
         ImGui::Begin("Control");
         ImGui::SliderFloat("Attack", &A, 0, 1);
         ImGui::SliderFloat("Decay", &D, 0, 1);
         ImGui::SliderFloat("Sustain", &S, 0, 1);
         ImGui::SliderFloat("Release", &R, 0, 1);
         ImGui::End();
-        bell->m_envelope.setA(A);
-        bell->m_envelope.setD(D);
-        bell->m_envelope.setS(S);
-        bell->m_envelope.setR(R);
+        mixer.m_instruments[0]->m_envelope.setA(A);
+        mixer.m_instruments[0]->m_envelope.setD(D);
+        mixer.m_instruments[0]->m_envelope.setS(S);
+        mixer.m_instruments[0]->m_envelope.setR(R);
 
         if (seqfd > 0) {
-            int ret = poll(&pfd,1,0);
+            int ret = poll(pfd,1,0);
 
-            if (ret > 0){
-            std::cout << "events " << ret << std::endl;
+            while (ret > 0 && running){
                 readPacketOk = read(seqfd, &inpacket, 1);
 
                 //    // print the MIDI byte if this input packet contains one
                 if (inpacket[0] == NOTE_ON) {
                     Note n;
-                    readPacketOk = read(seqfd, &inpacket, 3);
+                    readPacketOk = read(seqfd, &inpacket, 2);
                     // printf("Note on: %d , Velocity: %d, Channel: %d",inpacket[0], inpacket[1],inpacket[2]);
                     // envelope.note_on(mixer.getTime());
                     // bell->m_envelope.note_on(mixer.getTime());
@@ -230,59 +234,74 @@ int main(int argc, char *argv[]) {
                     // n.timeOff = mixer.getTime()+2;
                     // saw->m_envelope.note_on(mixer.getTime());
                     n.id = inpacket[0];
-                    bell->m_notes.push_back(n);
-                    saw->m_notes.push_back(n);
+                    bool test = false;
+                    if(!mixer.m_instruments[0]->m_notes.empty()){
+                        for (int i = 0;i<mixer.m_instruments[0]->m_notes.size();++i){
+                            if (mixer.m_instruments[0]->m_notes[i].id == n.id) {
+                                test=true;
+                                // n.timeOn = mixer.m_instruments[0]->m_notes[i].timeOn;
+                                // n.note_off(mixer.getTime());
+                                // std::cout << "note off "<< i <<std::endl;
+                                mixer.m_instruments[0]->m_notes[i].note_on(mixer.getTime());
+                            } 
+                        }
+                    }
+                    if (!test) mixer.m_instruments[0]->m_notes.push_back(n);
+                    // saw->m_notes.push_back(n);
                     // mixer.freq  =  bell->scale(inpacket[0]);
                     // printf("freq: %d %f, %f \n",diff,freq,(double)pow(2,diff));
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
                 }
                 if (inpacket[0] == NOTE_OFF) {
                     Note n;
-                    readPacketOk = read(seqfd, &inpacket, 3);
+                    readPacketOk = read(seqfd, &inpacket, 2);
                     // printf("Note off: %d , Velocity: %d, Channel: %d\n",inpacket[0], inpacket[1],inpacket[2]);
                     // envelope.note_off(mixer.getTime());
                     n.id = inpacket[0];
-                    if(!bell->m_notes.empty()){
-                        for (int i = 0;i<bell->m_notes.size();++i){
-                            if (bell->m_notes[i].id == n.id) {
-                                // n.timeOn = bell->m_notes[i].timeOn;
+                    if(!mixer.m_instruments[0]->m_notes.empty()){
+                        for (int i = 0;i<mixer.m_instruments[0]->m_notes.size();++i){
+                            if (mixer.m_instruments[0]->m_notes[i].id == n.id) {
+                                // n.timeOn = mixer.m_instruments[0]->m_notes[i].timeOn;
                                 // n.note_off(mixer.getTime());
                                 // std::cout << "note off "<< i <<std::endl;
-                            bell->m_notes[i].note_off(mixer.getTime());  
+                                mixer.m_instruments[0]->m_notes[i].note_off(mixer.getTime());
                             } 
                         }
                     }
                     // bell->m_envelope.note_off(mixer.getTime());
                     // saw->m_envelope.note_off(mixer.getTime());
-                    printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
+                    // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
                 }
-                    else if (inpacket[0] == CONTROL_CODE) {
-                    readPacketOk = read(seqfd, &inpacket, 3);
+                else if (inpacket[0] == CONTROL_CODE) {
+                    readPacketOk = read(seqfd, &inpacket, 2);
                     // printf("Code: %d , Angle: %f, Channel: %d\n",inpacket[0],(double) inpacket[1]/127*360,inpacket[2]);
                     if (inpacket[0]==20){
-                        bell->m_envelope.setA((double) inpacket[1]/127);
-                        saw->m_envelope.setA((double) inpacket[1]/127);
+                        mixer.m_instruments[0]->m_envelope.setA((double) inpacket[1]/127);
+                        // saw->m_envelope.setA((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==21){
-                        bell->m_envelope.setD((double) inpacket[1]/127);
-                        saw->m_envelope.setD((double) inpacket[1]/127);
+                        mixer.m_instruments[0]->m_envelope.setD((double) inpacket[1]/127);
+                        // saw->m_envelope.setD((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==22){
-                        bell->m_envelope.setS((double) inpacket[1]/127);
-                        saw->m_envelope.setS((double) inpacket[1]/127);
+                        mixer.m_instruments[0]->m_envelope.setS((double) inpacket[1]/127);
+                        // saw->m_envelope.setS((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==23){
-                        bell->m_envelope.setR((double) inpacket[1]/127);
-                        saw->m_envelope.setR((double) inpacket[1]/127);
+                        mixer.m_instruments[0]->m_envelope.setR((double) inpacket[1]/127);
+                        // saw->m_envelope.setR((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==118) running=false;
-                    if (inpacket[0]==119) bell->m_notes.erase(bell->m_notes.begin(),bell->m_notes.end());
+                    if (inpacket[0]==119) mixer.m_instruments[0]->m_notes.erase(mixer.m_instruments[0]->m_notes.begin(),mixer.m_instruments[0]->m_notes.end());
                 }
                 if (inpacket[0] == AFTERTOUCH) {
                     readPacketOk = read(seqfd, &inpacket, 1);
                     // printf("Aftertouch: %d \n",inpacket[0]);
                 }
+                ret-=1;
             }
+         
+
         }
 
 
@@ -355,8 +374,10 @@ int main(int argc, char *argv[]) {
 
         ImGui::Render();
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
+
+        // ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        // glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        // glClear(GL_COLOR_BUFFER_BIT);
         //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
