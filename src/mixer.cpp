@@ -1,6 +1,5 @@
+
 #include "mixer.hpp"
-
-
 
 Mixer::Mixer(unsigned int nSampleRate , unsigned int nChannels , SDL_AudioFormat nBlocks , unsigned int nSamples )
 {
@@ -43,6 +42,9 @@ void Mixer::fillStream(void *_mixer, Uint8 *_stream, int _len) {
         } else {
             stream[i]=0;
         }
+        // std::cout << mixer->m_instruments[0]->gen_sound(mixer->getTime(),mixer->freq/FREQUENCY),1.0;
+        // std:: cout << std::endl;
+        // stream[i] = clip(mixer->userFunction(mixer->getTime(),mixer->freq/FREQUENCY),1.0)*AMPLITUDE;
         mixer->incTime();
     }
 }

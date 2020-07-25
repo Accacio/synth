@@ -13,12 +13,15 @@ double ADSR_Envelope::getAmp(double _time, double _timeOn, double _timeOff,bool 
     double amp=m_StartAmp;
     if (lifeTime<=m_AttackTime){
         amp = (lifeTime/m_AttackTime)*m_StartAmp;
+        // std::cout << "ATT";
     }
     else if (lifeTime>m_AttackTime && lifeTime<=(m_AttackTime+m_DecayTime)){
         amp = ((lifeTime-m_AttackTime)/m_DecayTime)*(m_SustainAmp-m_StartAmp)+m_StartAmp;
+        // std::cout << "DEC";
     }
     else if (lifeTime>(m_AttackTime+m_DecayTime)){
         amp = m_SustainAmp;
+        // std::cout << "SUS";
     }
 
     if (time>TimeOff) {
@@ -27,6 +30,7 @@ double ADSR_Envelope::getAmp(double _time, double _timeOn, double _timeOff,bool 
             amp = 0;
             _active = false;
         }
+        // std::cout << "Release";
     }
 
     // std::cout << "Amp: " << amp << std::endl;

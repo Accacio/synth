@@ -7,26 +7,25 @@
 SOURCES = main.cpp
 # SOURCES += midi.cc
 
-EXE = synth
-SOURCES += mixer.cpp instrument.cpp aux.cpp
+EXE = build/synth
+SOURCES += src/mixer.cpp src/instrument.cpp src/aux.cpp
 SOURCES += imgui/examples/imgui_impl_sdl.cpp imgui/examples/imgui_impl_opengl2.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp
-OBJS = $(addsuffix .o, $(basename $(notdir $(SOURCES))))
+OBJS = $(addprefix build/,$(addsuffix .o, $(basename $(notdir $(SOURCES)))))
 
-INCLUDES = -Iimgui/ -Iimgui/examples
+INCLUDES = -Iimgui/ -Iimgui/examples -Ilib/
 
 LIBS =-lGL -ldl `sdl2-config --libs`
 INCLUDES += `sdl2-config --cflags`
-
-%.o:%.cpp
+build/%.o:src/%.cpp
 	@echo Compiling $@
 	@$(CXX) $(INCLUDES) -c -o $@ $<
 
-%.o:imgui/%.cpp
+build/%.o:imgui/%.cpp
 	@echo Compiling $@
 	@$(CXX) $(INCLUDES) -c -o $@ $<
 
-%.o:imgui/examples/%.cpp
+build/%.o:imgui/examples/%.cpp
 	@echo Compiling $@
 	@$(CXX) $(INCLUDES) -c -o $@ $<
 
@@ -41,10 +40,8 @@ clean:
 	rm -f $(EXE) $(OBJS)
 
 midi:
-	g++ midi.cc -o midi
+	g++ src/midi.cc -o build/midi
 
-midiRun:
-	./midi
 midiClean:
 	rm midi
 
