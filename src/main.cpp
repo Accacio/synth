@@ -16,6 +16,7 @@
 #include <SDL2/SDL_main.h>
 #include "mixer.hpp"
 #include "instrument.hpp"
+#include "instrumentCollec.hpp"
 #include <poll.h>
 #include <algorithm>
 #include "imgui.h"
@@ -33,105 +34,14 @@ CONTROL_CODE = 176,
 AFTERTOUCH = 208,
 };
 
-double square(double time, double freq){
-    double timbre = std::sin(time * 1 * freq * 2 * M_PI )>0? 1: -1;
-    return timbre*0.8;
-}
 
-double saw(double time, double freq){
-
-    double timbre =
-       (2.0/M_PI)*(freq*M_PI* fmod(time, 1/freq))- M_PI/2;
-    return timbre;
-}
-double sine(double time, double freq){
-
-    double timbre =
-        std::sin(time * 1 * freq * 2 * M_PI );
-    return timbre;
-}
-
-double noise(double time, double freq){
-
-    double timbre =
-        2*((double) rand()/ (double) RAND_MAX)-1;
-    return timbre;
-}
-
-class Bell : public Instrument {
-    public:
-        Bell() {
-            m_Volume = 1.0;
-        }
-
-        double gen_sound(double time, double freq){
-            // double timbre = sine(time, freq);
-            double timbre = 0;
-            double sound = 0;
-            double env = 0;
-            bool active ;
-
-            // std::cout << m_notes.size() << " " << std::endl;
-            if(!m_notes.empty()){
-                for (int i = 0; i < m_notes.size();i++){
-                    active = true;
-                    env = m_envelope.getAmp(time, m_notes[i].timeOn, m_notes[i].timeOff,m_notes[i].active);
-                    // if(i==0) std::cout << env << std::endl;
-                    sound =(double)  sine(time-m_notes[i].timeOn, scale(m_notes[i].id))/12;
-                    timbre += sound*env;
-                }
-
-                std::vector<Note>::iterator n = m_notes.begin();
-                while (n != m_notes.end())
-                    if (!n->active)
-                        n = m_notes.erase(n);
-                    else
-                        ++n;
-
-            }
-            return m_Volume* timbre;
-        }
-};
-class Saw: public Instrument {
-    public:
-        Saw() {
-            m_Volume = 1.0;
-        }
-
-        double gen_sound(double time, double freq){
-            // double timbre = sine(time, freq);
-            double timbre = 0;
-            double sound = 0;
-            double env = 0;
-            bool active ;
-
-            // std::cout << m_notes.size() << " " << std::endl;
-            if(!m_notes.empty()){
-                for (int i = 0; i < m_notes.size();i++){
-                    active = true;
-                    env = m_envelope.getAmp(time, m_notes[i].timeOn, m_notes[i].timeOff,m_notes[i].active);
-                    // if(i==0) std::cout << env << std::endl;
-                    sound = (double)  saw(time-m_notes[i].timeOn, scale(m_notes[i].id))/12;
-                    timbre += sound*env;
-                }
-
-                std::vector<Note>::iterator n = m_notes.begin();
-                while (n != m_notes.end())
-                    if (!n->active)
-                        n = m_notes.erase(n);
-                    else
-                        ++n;
-
-            }
-            return m_Volume* timbre;
-        }
-};
 
 
 int main(int argc, char *argv[]) {
     double freq = 0;
     int noteId = 0;
     Instrument *bell = new Bell();
+    Instrument *guitar = new Guitar();
     Instrument *saw= new Saw();
 
     SDL_Window* window = NULL;
@@ -162,8 +72,8 @@ int main(int argc, char *argv[]) {
     // Mixer mixer = Mixer();
     // envelope = ADSR_Envelope();
     // envelope.getAmp(time(0));
-    // mixer.addInstrument(bell);
-    mixer.addInstrument(saw);
+    mixer.addInstrument(guitar);
+    // mixer.addInstrument(saw);
     // mixer.userFunction = gen_sound;
 
     // if (seqfd ==-1) {

@@ -19,6 +19,7 @@ class ADSR_Envelope {
             // std::cout<< " set time on";
         };
 
+        double gen_sound(double time, double freq);
         void setA(double newA) {
             m_AttackTime = lerp(minAttackTime, maxAttackTime, newA);
         };

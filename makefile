@@ -8,7 +8,7 @@ SOURCES = main.cpp
 # SOURCES += midi.cc
 
 EXE = build/synth
-SOURCES += src/mixer.cpp src/instrument.cpp src/aux.cpp
+SOURCES += src/mixer.cpp src/instrument.cpp src/aux.cpp src/instrumentCollec.cpp
 SOURCES += imgui/examples/imgui_impl_sdl.cpp imgui/examples/imgui_impl_opengl2.cpp
 SOURCES += imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_widgets.cpp
 OBJS = $(addprefix build/,$(addsuffix .o, $(basename $(notdir $(SOURCES)))))
