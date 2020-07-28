@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     double freq = 0;
     int noteId = 0;
     Instrument *bell = new Bell();
-    Instrument *guitar = new Guitar();
+    Instrument *monochord = new Monochord();
     Instrument *saw= new Saw();
 
     SDL_Window* window = NULL;
@@ -271,7 +271,9 @@ int main(int argc, char *argv[]) {
     ImGui_ImplOpenGL2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-
+    delete bell;
+    delete monochord;
+    delete saw;
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();

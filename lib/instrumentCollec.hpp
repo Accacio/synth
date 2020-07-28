@@ -76,26 +76,30 @@ class Saw: public Instrument {
         }
 };
 
-class Guitar: public Instrument {
+class Monochord: public Instrument {
     public:
-        Guitar();
-        ~Guitar(){
-            delete stringAmpNew;
-            delete stringAmp;
-            delete stringAmpOld;
-        }
+        Monochord();
+        ~Monochord();
 
         double length;
+        double fingerLength=0;
         double tension;
         double density;
         int stringElements;
         double lastTime;
         double dx;
+        double pick;
+        double pickDist;
+        double pickUp;
 
-        double * stringAmpNew; //y(x,t)
-        double * stringAmp; //y(x,t-1)
-        double * stringAmpOld; //y(x,t-2)
+        // double * stringAmpOld{}; //y(x,t-2)
         double gen_sound(double time, double freq);
+        void add_note(Note note);
+        void remove_note(Note note);
+    private:
+        double * stringAmp; //y(x,t-1)
+        double * stringAmpNew; //y(x,t)
+        double * stringAmpOld; //y(x,t)
                                              //
 };
 
