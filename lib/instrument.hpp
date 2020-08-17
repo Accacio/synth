@@ -138,7 +138,8 @@ class Instrument {
         ADSR_Envelope m_envelope;
         std::vector<Note> m_notes;
         double scale(int noteId) {return pow(2,(float) (noteId-69)/12)*440;}
+        virtual void add_note(Note note);
+        virtual void remove_note(Note note);
+
 };
-
-
 #endif // __INSTRUMENT_H_

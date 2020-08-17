@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     double freq = 0;
     int noteId = 0;
     Instrument *bell = new Bell();
-    Instrument *guitar = new Guitar();
+    Instrument *monochord = new Monochord();
     Instrument *saw= new Saw();
 
     SDL_Window* window = NULL;
@@ -148,28 +148,11 @@ int main(int argc, char *argv[]) {
                     Note n;
                     readPacketOk = read(seqfd, &inpacket, 2);
                     // printf("Note on: %d , Velocity: %d, Channel: %d",inpacket[0], inpacket[1],inpacket[2]);
-                    // envelope.note_on(mixer.getTime());
-                    // bell->m_envelope.note_on(mixer.getTime());
-                    n.note_on(mixer.getTime());
-                    // n.timeOff = mixer.getTime()+2;
-                    // saw->m_envelope.note_on(mixer.getTime());
                     n.id = inpacket[0];
-                    bool test = false;
-                    if(!mixer.m_instruments[0]->m_notes.empty()){
-                        for (int i = 0;i<mixer.m_instruments[0]->m_notes.size();++i){
-                            if (mixer.m_instruments[0]->m_notes[i].id == n.id) {
-                                test=true;
-                                // n.timeOn = mixer.m_instruments[0]->m_notes[i].timeOn;
-                                // n.note_off(mixer.getTime());
-                                // std::cout << "note off "<< i <<std::endl;
-                                mixer.m_instruments[0]->m_notes[i].note_on(mixer.getTime());
-                            } 
-                        }
-                    }
-                    if (!test) mixer.m_instruments[0]->m_notes.push_back(n);
+                    n.note_on(mixer.getTime());
+                    mixer.m_instruments[0]->add_note(n);
                     // saw->m_notes.push_back(n);
                     // mixer.freq  =  bell->scale(inpacket[0]);
-                    // printf("freq: %d %f, %f \n",diff,freq,(double)pow(2,diff));
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
                 }
                 if (inpacket[0] == NOTE_OFF) {
@@ -178,16 +161,8 @@ int main(int argc, char *argv[]) {
                     // printf("Note off: %d , Velocity: %d, Channel: %d\n",inpacket[0], inpacket[1],inpacket[2]);
                     // envelope.note_off(mixer.getTime());
                     n.id = inpacket[0];
-                    if(!mixer.m_instruments[0]->m_notes.empty()){
-                        for (int i = 0;i<mixer.m_instruments[0]->m_notes.size();++i){
-                            if (mixer.m_instruments[0]->m_notes[i].id == n.id) {
-                                // n.timeOn = mixer.m_instruments[0]->m_notes[i].timeOn;
-                                // n.note_off(mixer.getTime());
-                                // std::cout << "note off "<< i <<std::endl;
-                                mixer.m_instruments[0]->m_notes[i].note_off(mixer.getTime());
-                            } 
-                        }
-                    }
+                    n.note_off(mixer.getTime());
+                    mixer.m_instruments[0]->remove_note(n);
                     // bell->m_envelope.note_off(mixer.getTime());
                     // saw->m_envelope.note_off(mixer.getTime());
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
@@ -314,7 +289,9 @@ int main(int argc, char *argv[]) {
     ImGui_ImplOpenGL2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-
+    delete bell;
+    delete monochord;
+    delete saw;
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();

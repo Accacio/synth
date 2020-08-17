@@ -49,3 +49,27 @@ ADSR_Envelope::ADSR_Envelope(double startAmp,
         m_ReleaseTime=releaseTime;
 }
 
+void Instrument::add_note(Note note){
+    bool newnote = true;
+    if(!m_notes.empty()){
+        for (int i = 0;i<m_notes.size();++i){
+            if (m_notes[i].id == note.id) {
+                newnote=false;
+                // n.timeOn = mixer.m_instruments[0]->m_notes[i].timeOn;
+                // n.note_off(mixer.getTime());
+                // std::cout << "note off "<< i <<std::endl;
+                m_notes[i].note_on(note.timeOn);
+            }
+        }
+    }
+    if(newnote)m_notes.push_back(note);
+}
+
+void Instrument::remove_note(Note note){
+    if(!m_notes.empty()){
+        for (int i = 0;i<m_notes.size();++i){
+            if (m_notes[i].id == note.id)
+                m_notes[i].note_off(note.timeOff);
+        }
+    }
+}
