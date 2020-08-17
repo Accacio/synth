@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
     Instrument *saw= new Saw();
 
     SDL_Window* window = NULL;
-    SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 
     unsigned char inpacket[4];
     int readPacketOk;
@@ -77,7 +76,8 @@ int main(int argc, char *argv[]) {
     // mixer.userFunction = gen_sound;
 
     // if (seqfd ==-1) {
-        window = SDL_CreateWindow("Mysynth", 10, 10, 800, 600, SDL_WINDOW_SHOWN);
+        window = SDL_CreateWindow("Mysynth", 10, 10, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+        SDL_GLContext gl_context = SDL_GL_CreateContext(window);
         if (window == NULL) return 1;
         SDL_GL_MakeCurrent(window, gl_context);
         SDL_GL_SetSwapInterval(1); // Enable vsync
@@ -86,10 +86,20 @@ int main(int argc, char *argv[]) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
         ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+        //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
 
         // Setup Dear ImGui style
         // ImGui::StyleColorsDark();
 
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
 
         // Setup Platform/Renderer bindings
         ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
@@ -287,7 +297,15 @@ int main(int argc, char *argv[]) {
 
         // ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
         // glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        // glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
+            SDL_GLContext backup_current_context = SDL_GL_GetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+        }
         //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
