@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     // Mixer mixer = Mixer();
     // envelope = ADSR_Envelope();
     // envelope.getAmp(time(0));
-    mixer.addInstrument(guitar);
+    mixer.addInstrument(monochord);
     // mixer.addInstrument(saw);
     // mixer.userFunction = gen_sound;
 
