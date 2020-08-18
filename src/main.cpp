@@ -38,7 +38,7 @@ AFTERTOUCH = 208,
 
 
 int main(int argc, char *argv[]) {
-    double freq = 0;
+    // double freq = 0;
     int noteId = 0;
     Instrument *bell = new Bell();
     Instrument *monochord = new Monochord();
@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
     // envelope.getAmp(time(0));
     mixer.addInstrument(monochord);
     // mixer.addInstrument(saw);
+    // mixer.addInstrument(bell);
     // mixer.userFunction = gen_sound;
 
     // if (seqfd ==-1) {
@@ -116,6 +117,9 @@ int main(int argc, char *argv[]) {
     float step = (float) 1/60;
     bool quitting=false;
     float opac = 0;
+
+    Instrument* instrument = mixer.getInstrumentByIndex(0);
+
     while(running)
     {
         if (!quitting & (opac<1)){
@@ -135,20 +139,20 @@ int main(int argc, char *argv[]) {
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
-        A = mixer.m_instruments[0]->m_envelope.getA();
-        D = mixer.m_instruments[0]->m_envelope.getD();
-        S = mixer.m_instruments[0]->m_envelope.getS();
-        R = mixer.m_instruments[0]->m_envelope.getR();
+        A = instrument->m_envelope.getA();
+        D = instrument->m_envelope.getD();
+        S = instrument->m_envelope.getS();
+        R = instrument->m_envelope.getR();
         ImGui::Begin("Control");
         ImGui::SliderFloat("Attack", &A, 0, 1);
         ImGui::SliderFloat("Decay", &D, 0, 1);
         ImGui::SliderFloat("Sustain", &S, 0, 1);
         ImGui::SliderFloat("Release", &R, 0, 1);
         ImGui::End();
-        mixer.m_instruments[0]->m_envelope.setA(A);
-        mixer.m_instruments[0]->m_envelope.setD(D);
-        mixer.m_instruments[0]->m_envelope.setS(S);
-        mixer.m_instruments[0]->m_envelope.setR(R);
+        instrument->m_envelope.setA(A);
+        instrument->m_envelope.setD(D);
+        instrument->m_envelope.setS(S);
+        instrument->m_envelope.setR(R);
 
         if (seqfd > 0) {
             int ret = poll(pfd,1,0);
@@ -163,7 +167,7 @@ int main(int argc, char *argv[]) {
                     // printf("Note on: %d , Velocity: %d, Channel: %d",inpacket[0], inpacket[1],inpacket[2]);
                     n.id = inpacket[0];
                     n.note_on(mixer.getTime());
-                    mixer.m_instruments[0]->add_note(n);
+                    instrument->add_note(n);
                     // saw->m_notes.push_back(n);
                     // mixer.freq  =  bell->scale(inpacket[0]);
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
@@ -175,7 +179,7 @@ int main(int argc, char *argv[]) {
                     // envelope.note_off(mixer.getTime());
                     n.id = inpacket[0];
                     n.note_off(mixer.getTime());
-                    mixer.m_instruments[0]->remove_note(n);
+                    instrument->remove_note(n);
                     // bell->m_envelope.note_off(mixer.getTime());
                     // saw->m_envelope.note_off(mixer.getTime());
                     // printf("received MIDI byte: %d %d %d %d \n",inpacket[0],inpacket[1], inpacket[2],inpacket[3]);
@@ -184,23 +188,23 @@ int main(int argc, char *argv[]) {
                     readPacketOk = read(seqfd, &inpacket, 2);
                     // printf("Code: %d , Angle: %f, Channel: %d\n",inpacket[0],(double) inpacket[1]/127*360,inpacket[2]);
                     if (inpacket[0]==20){
-                        mixer.m_instruments[0]->m_envelope.setA((double) inpacket[1]/127);
+                        instrument->m_envelope.setA((double) inpacket[1]/127);
                         // saw->m_envelope.setA((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==21){
-                        mixer.m_instruments[0]->m_envelope.setD((double) inpacket[1]/127);
+                        instrument->m_envelope.setD((double) inpacket[1]/127);
                         // saw->m_envelope.setD((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==22){
-                        mixer.m_instruments[0]->m_envelope.setS((double) inpacket[1]/127);
+                        instrument->m_envelope.setS((double) inpacket[1]/127);
                         // saw->m_envelope.setS((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==23){
-                        mixer.m_instruments[0]->m_envelope.setR((double) inpacket[1]/127);
+                        instrument->m_envelope.setR((double) inpacket[1]/127);
                         // saw->m_envelope.setR((double) inpacket[1]/127);
                     }
                     if (inpacket[0]==118) running=false;
-                    if (inpacket[0]==119) mixer.m_instruments[0]->m_notes.erase(mixer.m_instruments[0]->m_notes.begin(),mixer.m_instruments[0]->m_notes.end());
+                    if (inpacket[0]==119) instrument->m_notes.erase(instrument->m_notes.begin(),instrument->m_notes.end());
                 }
                 if (inpacket[0] == AFTERTOUCH) {
                     readPacketOk = read(seqfd, &inpacket, 1);
@@ -285,9 +289,6 @@ int main(int argc, char *argv[]) {
         ImGui::Render();
         glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             SDL_Window* backup_current_window = SDL_GL_GetCurrentWindow();
@@ -296,16 +297,25 @@ int main(int argc, char *argv[]) {
             ImGui::RenderPlatformWindowsDefault();
             SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
         }
+        // ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        // glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        // glClear(GL_COLOR_BUFFER_BIT);
+        ImVec4 clear_color = ImVec4(0.42f, 0.58f, 0.92f, 1.00f);
+        glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+        glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
     }
-
+    bell->gen_sound(mixer.getTime(), 2230);
     ImGui_ImplOpenGL2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
+
     SDL_GL_DeleteContext(gl_context);
+    SDL_AudioQuit();
     SDL_DestroyWindow(window);
     SDL_Quit();
+    mixer.removeAllInstruments();
     delete bell;
     delete monochord;
     delete saw;

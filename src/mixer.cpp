@@ -18,7 +18,8 @@ Mixer::Mixer(unsigned int nSampleRate , unsigned int nChannels , SDL_AudioFormat
 
 }
 Mixer::~Mixer(){
-   SDL_CloseAudio();
+    SDL_PauseAudio(0);
+    SDL_CloseAudio();
 };
 
 
@@ -51,4 +52,17 @@ void Mixer::fillStream(void *_mixer, Uint8 *_stream, int _len) {
 
 void Mixer::addInstrument(Instrument *instrument){
     m_instruments.push_back(instrument);
+}
+void Mixer::removeInstrument(Instrument *instrument){
+    for (int i = 0; i<m_instruments.size();i++ ){
+        if (m_instruments[i]==instrument)
+            m_instruments.erase(m_instruments.begin()+i);
+    }
+}
+void Mixer::removeAllInstruments(){
+    m_instruments.clear();
+}
+
+Instrument* Mixer::getInstrumentByIndex(int index){
+  return m_instruments[index];
 }

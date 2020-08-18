@@ -131,7 +131,7 @@ class Instrument {
     public:
         double m_Volume;
         // Instrument(){};
-        // ~Instrument(){};
+        virtual ~Instrument(){};
         virtual double gen_sound(double time, double freq){ return 0;};
         // void note_on(uint32_t timeOn) {m_envelope.note_on(timeOn);};
         // void note_off(uint32_t timeOff){m_envelope.note_off(timeOff);};

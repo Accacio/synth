@@ -3,7 +3,7 @@
 
 Monochord::Monochord() {
     m_Volume = 1.0;
-    stringElements=50;
+    stringElements=15;
     length=0.65087;
     stringAmp = new double[stringElements+1];
     stringAmpNew = new double[stringElements+1];
@@ -16,9 +16,16 @@ Monochord::Monochord() {
     stringAmpNew[0] = 0.0;
     stringAmp[0] = 0.0;
     stringAmp[stringElements] = 0.0;
-    tension=71.172;
     // tension=69.;
+    // la
+    tension=71.172;
     density=0.0034323;
+
+    // mi
+    // tension=58.272;
+    // density=0.0003164;
+
+
 
     pick=0.5;
     pickDist=1.0;
@@ -38,8 +45,8 @@ double Monochord::gen_sound(double time, double freq){
             double env = 0;
             bool active ;
             double dt=(time-lastTime);
-            double fs=1/dt;
-
+            // double fs=1/dt;
+            // fingerLength = fingerLength+.1*dt>length? length : fingerLength+.1*dt;
             dx=(fingerLength/stringElements);
             // std::cout << fs << std::endl;
             // std::cout << m_notes.size() << " " << std::endl;
@@ -52,12 +59,12 @@ double Monochord::gen_sound(double time, double freq){
                     // calculate amplitude
 
                     int pickElem = (int) std::floor(stringElements*pick)-1;
-                    for (int x = 1; x < stringElements; ++x){
+                    for (int x = 1; x < stringElements-1; ++x){
                         stringAmpNew[x] = 2*stringAmp[x]
                             - stringAmpOld[x]
                             + (nu)*(nu) * (stringAmp[x-1]-2*stringAmp[x]+stringAmp[x+1]);
                     }
-                    for (int x = 1; x < stringElements; x++){
+                    for (int x = 1; x < stringElements-1; x++){
                         stringAmpOld[x] = stringAmp[x];
                         stringAmp[x] = stringAmpNew[x];
                         // std::cout << stringAmp[x] << " ";
@@ -100,11 +107,12 @@ void Monochord::add_note(Note note){
     }else{
         m_notes.push_back(note);
 
-        double proport = 1/(pow(2,(float) (note.id-69)/12));
-        // fingerLength =  proport<=1 ?  proport*length : length;
-        fingerLength =  proport*length;
-        std::cout << proport << std::endl;
-        int pickUpElem = (int) std::floor(stringElements*pickUp)-1;
+        double freq = scale(note.id);
+        double proport = (1/(2*length)*std::sqrt(tension/density))/freq;
+        fingerLength =  proport<=1 ?  proport*length : length;
+        // fingerLength =  proport*length;
+
+        std::cout << proport << " " << freq << std::endl;
         int pickElem = (int) std::floor(stringElements*pick)-1;
         for (int x = 0; x < stringElements; x++){
             if (x < pickElem) {
@@ -119,14 +127,7 @@ void Monochord::add_note(Note note){
             }
         }
     }
-
-    // if((time-m_notes[i].timeOn)<0.1) {
-
-        // std::cout << time << " Pick elem " << pickElem << std::endl;
-        // std::cout << std::endl;
-    // }
 }
-// std::cout << "stub";
 
 
 void Monochord::remove_note(Note note){

@@ -13,8 +13,10 @@ class Mixer{
                 ~Mixer();
                 double (*userFunction)(double,double);
                 double freq;
-                std::vector<Instrument*> m_instruments;
                 void addInstrument(Instrument *instrument);
+                void removeInstrument(Instrument *instrument);
+                void removeAllInstruments();
+                Instrument* getInstrumentByIndex(int index);
                 static const int AMPLITUDE = 28000;
                 static const int FREQUENCY = 44100;
                 double getTime(){return v/FREQUENCY;}
@@ -25,6 +27,7 @@ class Mixer{
                 static void fillStream(void *_mixer, Uint8 *_stream, int _len);
         private:
                 double v;
+                std::vector<Instrument*> m_instruments;
   
 };
 

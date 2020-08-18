@@ -4,6 +4,7 @@
 # @file
 # @version 0.1
 #
+CXX=clang++
 SOURCES = main.cpp
 # SOURCES += midi.cc
 
@@ -19,21 +20,22 @@ LIBS =-lGL -ldl `sdl2-config --libs`
 INCLUDES += `sdl2-config --cflags`
 build/%.o:src/%.cpp
 	@echo Compiling $@
-	@$(CXX) $(INCLUDES) -c -o $@ $<
+	@$(CXX) -MJ $@.json $(INCLUDES) -c -o $@ $<
 
 build/%.o:imgui/%.cpp
 	@echo Compiling $@
-	@$(CXX) $(INCLUDES) -c -o $@ $<
+	@$(CXX) -MJ $@.json $(INCLUDES) -c -o $@ $<
 
 build/%.o:imgui/examples/%.cpp
 	@echo Compiling $@
-	@$(CXX) $(INCLUDES) -c -o $@ $<
+	@$(CXX) -MJ $@.json $(INCLUDES) -c -o $@ $<
 
 all: $(EXE)
 	@echo Build complete
 
 $(EXE): $(OBJS)
 	@echo Linking
+	@sed -e '1s/^/[\n/' -e '$$s/,$$/\n]/' build/*.o.json > compile_commands.json
 	@$(CXX) -o $@ $^ $(LIBS) $(INCLUDES)
 
 clean:

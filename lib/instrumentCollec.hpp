@@ -6,12 +6,13 @@
 #include "aux.hpp"
 #include "math.h"
 
+/**  Generates a bell like sound */
 class Bell : public Instrument {
     public:
         Bell() {
             m_Volume = 1.0;
         }
-
+       
         double gen_sound(double time, double freq){
             // double timbre = sine(time, freq);
             double timbre = 0;
