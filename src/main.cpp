@@ -112,8 +112,26 @@ int main(int argc, char *argv[]) {
 
     float A; float D; float S; float R;
     SDL_SetWindowBordered(window, SDL_FALSE);
+   
+    float step = (float) 1/60;
+    bool quitting=false;
+    float opac = 0;
     while(running)
     {
+        if (!quitting & (opac<1)){
+            SDL_SetWindowOpacity(window, opac);
+            opac+=step;
+        }
+        if (quitting){
+            if (opac > 0) {
+                opac-=step;
+                SDL_SetWindowOpacity(window, opac);
+            }else{
+                running=false;
+            }
+        }
+
+
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplSDL2_NewFrame(window);
         ImGui::NewFrame();
@@ -206,7 +224,9 @@ int main(int argc, char *argv[]) {
                     if (event.key.keysym.sym && ! event.key.repeat){
                         bell->m_envelope.note_on(mixer.getTime());
                         switch (event.key.keysym.sym ) {
-                            case SDLK_ESCAPE: running=false; break;
+                            case SDLK_ESCAPE:
+                                quitting=true;
+                                break;
                             case SDLK_w: noteId=60;
                                 mixer.freq = bell->scale(noteId);
                                 break;
@@ -256,7 +276,7 @@ int main(int argc, char *argv[]) {
                     bell->m_envelope.note_off(mixer.getTime());
                     break;
                 case SDL_QUIT:
-                    running=false;
+                    quitting=true;
                     break;
             }
         }
