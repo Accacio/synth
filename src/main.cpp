@@ -104,15 +104,11 @@ int main(int argc, char *argv[]) {
         ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
         ImGui_ImplOpenGL2_Init();
 
-        SDL_Surface *screensurface = SDL_GetWindowSurface(window);
-        SDL_FillRect(screensurface, NULL, SDL_MapRGB(screensurface->format, 0x69,0x95,0xED));
         SDL_UpdateWindowSurface(window);
     // }
     bool running = true;
     SDL_Event event;
 
-    bool show_demo_window = true;
-    bool show_another_window = false;
 
     float A; float D; float S; float R;
 
