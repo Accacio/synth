@@ -76,9 +76,8 @@ int main(int argc, char *argv[]) {
     // mixer.userFunction = gen_sound;
 
     // if (seqfd ==-1) {
-        window = SDL_CreateWindow("Mysynth", 10, 10, 800, 600, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+    window = SDL_CreateWindow("Mysynth", 10, 10, 1280, 720, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL| SDL_WINDOW_ALLOW_HIGHDPI );
         SDL_GLContext gl_context = SDL_GL_CreateContext(window);
-        if (window == NULL) return 1;
         SDL_GL_MakeCurrent(window, gl_context);
         SDL_GL_SetSwapInterval(1); // Enable vsync
 
