@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 
 
     float A; float D; float S; float R;
-
+    SDL_SetWindowBordered(window, SDL_FALSE);
     while(running)
     {
         ImGui_ImplOpenGL2_NewFrame();
@@ -276,7 +276,6 @@ int main(int argc, char *argv[]) {
             ImGui::RenderPlatformWindowsDefault();
             SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
         }
-        //glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound
         ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
         SDL_GL_SwapWindow(window);
     }
