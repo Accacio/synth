@@ -289,11 +289,11 @@ int main(int argc, char *argv[]) {
     ImGui_ImplOpenGL2_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
-    delete bell;
-    delete monochord;
-    delete saw;
     SDL_GL_DeleteContext(gl_context);
     SDL_DestroyWindow(window);
     SDL_Quit();
+    delete bell;
+    delete monochord;
+    delete saw;
    return 0;
 }
